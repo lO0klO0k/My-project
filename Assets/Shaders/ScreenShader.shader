@@ -60,7 +60,11 @@ Shader "Unlit/ScreenShader"
                 // perform distortion for curved screen (follows a parabola)
 	            i.uv.x += distortionFactorX * (-2.0 * xZoomed + distortionCenterX) * yZoomed * (yZoomed - 1.0);	
 	            i.uv.y += distortionFactorY * (-2.0 * pow(yZoomed, distortionBowY) + distortionCenterY) * xZoomed * (xZoomed - 1.0);
-                half4 col = tex2D(_MainTex, i.uv);
+                half4 col = half4(0, 0, 0, 0);
+                if(i.uv.x <= 1.f && i.uv.x >= 0.f && i.uv.y <= 1.f && i.uv.y >= 0.f)
+                {
+                    col = tex2D(_MainTex, i.uv);
+                }
                 //half4 col = half4(i.WorldNormal, 1);
                 return col;
             }
