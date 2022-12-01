@@ -7,6 +7,7 @@ Shader "Unlit/cut3_CylinderScreenShader"
         _EndOfScreenAngle("ScreenAngle", Range(0.1, 180)) = 90
         _SplitAngle("SplitAngle", Range(0.1,180)) = 30
         //_SplitScreen("SplitScreen", Int) = 3
+        //
     }
     SubShader
     {
