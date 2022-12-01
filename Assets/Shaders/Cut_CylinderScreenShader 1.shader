@@ -5,8 +5,8 @@ Shader "Unlit/cut3_CylinderScreenShader"
         _ScreenHeight("Screen Height", Range(0.0001,5)) = 1
         _MainTex ("Texture", 2D) = "white" {}
         _EndOfScreenAngle("ScreenAngle", Range(0.1, 180)) = 90
-        _SplitAngle("SplitAngle", float) = 30
-        _SplitScreen("SplitScreen", Int) = 3
+        _SplitAngle("SplitAngle", Range(0.1,180)) = 30
+        //_SplitScreen("SplitScreen", Int) = 3
     }
     SubShader
     {
@@ -54,45 +54,54 @@ Shader "Unlit/cut3_CylinderScreenShader"
                 float rad = _EndOfScreenAngle * UNITY_PI / 180.0;
                 float2 EndScreenDir = float2(cos(rad), sin(rad));
                 float SplitAngle = _SplitAngle * UNITY_PI / 180.0;
+
                 
                 float2 StartScreenDir = float2(1, 0);
-                float2 StartScreenDir1 = float2(0, -1);
-                float2 StartScreenDir2 = float2(0, 1);
+                float2 StartScreenDirLeft = float2(0, -1);
+                float2 StartScreenDirRight = float2(0, 1);
                 //从屏幕中心到两边的角度
-                float TotalAngle = acos(dot(StartScreenDir, EndScreenDir));
+                float TotalAngle = 2 * acos(dot(StartScreenDir, EndScreenDir));
                 float theta = 0;
                 float z = 0;
                 
-                if(o.PosLS.g <= -sqrt(2)/2)//取左边
-                {
-                        if(o.PosLS.r >= 0)
+                if(o.PosLS.g <= -sqrt(2)/2)
+                {//取左边
+                    //取theta的百分比
+                    float pre = acos(dot(LS, float3(StartScreenDirLeft, 0))) / SplitAngle;
+                    if(o.PosLS.r >= 0)
                     {
-                        theta = (0.5 + 0.5 * acos(dot(LS, float3(StartScreenDir1, 0))) / SplitAngle) / 3.0;
+                        //只有右边会超过1，超出部分删除（在frag阶段，这里置2.0）
+                        theta = (0.5 + 0.5 * pre) >= 1.0 ? 2.0 : (0.0 / 3.0 + (0.5 + 0.5 * pre) / 3.0);
                     }
                     else
                     {
-                        theta = (0.5 - 0.5 * acos(dot(LS, float3(StartScreenDir1, 0))) / SplitAngle) / 3.0;
+                        theta = (0.5 - 0.5 * pre) / 3.0;
                     }
                 }
-                else if(o.PosLS.g >= sqrt(2)/2){//取右边
-                    if(o.PosLS.r <= 0)
+                else if(o.PosLS.g >= sqrt(2)/2)
+                {//取右边
+                    float pre = acos(dot(LS, float3(StartScreenDirRight, 0))) / SplitAngle;
+                    if(o.PosLS.r >= 0)
                     {
-                        theta = 2.0 / 3.0 + (0.5 + 0.5 * acos(dot(LS, float3(StartScreenDir2, 0))) / SplitAngle) / 3.0;
+                        //只有左边会小于1，超出部分删除（在frag阶段，这里置2.0）
+                        theta = (0.5 - 0.5 * pre) <= 0.0 ? 2.0 : (2.0 / 3.0 + (0.5 - 0.5 * pre) / 3.0);
                     }
                     else
                     {
-                        theta = 2.0 / 3.0 + (0.5 - 0.5 * acos(dot(LS, float3(StartScreenDir2, 0))) / SplitAngle) / 3.0f;
+                        theta = 2.0 / 3.0 + (0.5 + 0.5 * pre) / 3.0;
                     }
                 }
                 else{
+                    //中间
+                    float pre = acos(dot(LS, float3(StartScreenDir, 0))) / SplitAngle;
+                    //左右超出部分删除
                     if(o.PosLS.g >= 0)
                     {
-                        theta =  1.0 / 3.0 + (0.5 + 0.5 * acos(dot(LS, float3(StartScreenDir, 0))) / SplitAngle) / 3.0;
+                        theta =  (0.5 + 0.5 * pre) >= 1.0 ? 2.0 : (1.0 / 3.0 +  (0.5 + 0.5 * pre) / 3.0);
                     }
                     else
                     {
-                        theta = 1.0 / 3.0 + (0.5 - 0.5 * acos(dot(LS, float3(1, 0, 0))) / SplitAngle) / 3.0;
-                
+                        theta = (0.5 - 0.5 * pre) <= 0.0 ? 2.0 : (1.0 / 3.0 + (0.5 - 0.5 * pre) / 3.0);
                     }  
                 }
                 

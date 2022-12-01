@@ -59,7 +59,7 @@ Shader "Unlit/FromMiddle_CylinderScreenShader"
 
                 if(o.PosLS.g >= 0)
                 {
-                    theta = 0.5 + 0.5*acos(dot(LS, float3(StartScreenDir, 0))) / SideAngle;
+                    theta = 0.5 + 0.5 * acos(dot(LS, float3(StartScreenDir, 0))) / SideAngle;
                 
                     z = (o.PosLS.b  + _ScreenHeight/2.f) / _ScreenHeight;
                 }
